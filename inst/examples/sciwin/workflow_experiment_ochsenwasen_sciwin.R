@@ -11,6 +11,10 @@
 ## Notes: simulation results have yet to be refined
 ## 
 ## -----------------------------------------------------------------------------------
+# Load required libraries
+library(csmTools)
+library(dplyr)
+library(ggplot2)
 
 ###----- Crop management/manually input data (template) ------------------------------
 ## -----------------------------------------------------------------------------------
@@ -268,7 +272,8 @@ dataset_dssat_input <- build_simulation_files(
 ###----- Run DSSAT simulation ------------------------------------------------------
 
 simulations <- run_simulations(
-  filex_path = "C:/DSSAT48/Wheat/HWOC2501.WHX",  # the crop management file in the DSSAT location
+  # filex_path = "C:/DSSAT48/Wheat/HWOC2501.WHX",  # the crop management file in the DSSAT location
+  filex_path = "./inst/examples/sciwin/HWOC2501.WHX",
   treatments = c(1, 3, 7),  # treatment index
   framework = "dssat",
   dssat_dir = NULL,
@@ -329,7 +334,7 @@ plot_growth <- sims %>%
         axis.text = element_text(size = 9, colour = "black"))
 
 ggsave(
-  filename = "./inst/examples/sciwin/simulation_results.png",
+  filename = "./inst/examples/sciwin/simulation_results_2.png",
   plot_growth,
   width = 15, height = 12, units = "cm",
   dpi = 600,

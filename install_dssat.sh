@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 dir=~/dssat
 
-if [ $# -eq 1 ]
-    then
-        dir=$1
+if [ $# -eq 1 ]; then
+    dir=$1
 fi
 
 echo $dir
@@ -13,3 +12,4 @@ git clone https://github.com/DSSAT/dssat-csm-data ~/dssat-csm-data --branch v4.8
 mkdir $dir/
 cp -r ~/dssat-csm-os/Data/* $dir/
 cp -r ~/dssat-csm-os/build/bin/* $dir/
+

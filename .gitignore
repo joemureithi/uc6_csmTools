@@ -42,3 +42,6 @@ inst/extdata/test_fixtures/
 po/*~
 # RStudio Connect folder
 rsconnect/
+
+# Temporary files
+/temp/

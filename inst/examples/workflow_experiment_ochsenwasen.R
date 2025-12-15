@@ -13,6 +13,11 @@
 ## 
 ## -----------------------------------------------------------------------------------
 
+# Load required libraries
+library(csmTools)
+library(dplyr)
+library(ggplot2)
+
 ###----- Crop management/manually input data (template) ------------------------------
 ## -----------------------------------------------------------------------------------
 ## This section demonstrates the import of ICASA-compliant field (meta)data via the
@@ -56,7 +61,8 @@ print(cseason)  # Note: the cultivation season overlaps 2024 and 2025
 base_url <- "https://keycloak.hef.tum.de/realms/master/protocol/openid-connect/token"
 user_url <- Sys.getenv("FROST_USER_URL")
 
-keycloak_token <- get_kc_token(
+# Prepare credentials list for get_sensor_data
+frost_creds <- list(
   url = base_url,
   client_id = Sys.getenv("FROST_CLIENT_ID"),
   client_secret = Sys.getenv("FROST_CLIENT_SECRET"),
@@ -77,7 +83,7 @@ latitude = 49.20868
 # Data extraction and mapping
 wth_sensor_raw <- get_sensor_data(
   url = user_url,
-  token = keycloak_token,
+  creds = frost_creds,
   var = wth_parameters,
   lon = 10.645269,
   lat = 49.20868, 
@@ -86,13 +92,11 @@ wth_sensor_raw <- get_sensor_data(
   to = end_date,
   output_path = "./archive/tmp_weatherdata_sensor.json"
 )
-names(wth_field_allstations_raw)  # 3 weather stations found
-wth_field_raw <- wth_field_allstations_raw$`Weatherstation 002098A0`  # Select focal station
-# 2025-11-27 Locations not linked to weather stations anymore??!
 
 # --- Map raw weather data to ICASA ---
+# Use the sensor data file path since it was saved
 wth_field_icasa <- convert_dataset(
-  dataset = wth_field_raw,
+  dataset = "./archive/tmp_weatherdata_sensor.json",
   input_model = "user",
   output_model = "icasa",
   unmatched_code = "na"
@@ -113,19 +117,8 @@ c(min(wth_field_icasa$WEATHER_DAILY$weather_date),
   max(wth_field_icasa$WEATHER_DAILY$weather_date))
 # >> Sensors were only installed in spring, no data from planting date!
 
-# --- Download complementary weather data ---
+# --- Download complementary weather data from NASA POWER ---
 wth_nasa_raw <- get_weather_data(
-  lon = longitude,
-  lat = latitude,
-  pars = c("air_temperature", "precipitation", "solar_radiation"),
-  res = "daily",
-  from = start_date,
-  to = end_date,
-  src = "nasa_power"
-)
-
-#
-wth_nasapower <- get_weather(
   lon = longitude,
   lat = latitude,
   pars = c("air_temperature", "precipitation", "solar_radiation"),
@@ -135,15 +128,6 @@ wth_nasapower <- get_weather(
   src = "nasa_power",
   output_path = "./archive/tmp_weatherdata_nasapower.json"
 )
-str(wth_nasapower)
-
-attr(wth_nasapower$WEATHER_DAILY, "problems") <- NULL
-
-weather_data_for_json <- list(WEATHER_DAILY = wth_nasapower)
-export_output(weather_data_for_json, "./archive/tmp_weatherdata_icasa.json")
-
-export_output(wth_nasapower, "./archive/tmp_weatherdata_icasa.json")
-
 
 # --- Map complementary weather data to ICASA ---
 wth_nasa_icasa <- convert_dataset(
@@ -153,17 +137,13 @@ wth_nasa_icasa <- convert_dataset(
   output_path = "./archive/tmp_weatherdata_icasa.json"
 )
 
-# -- Assemble composite dataset ---
-weather_icasa <- list()
-weather_icasa$WEATHER_METADATA <- build_composite_data(
-  list(wth_field_icasa$WEATHER_METADATA, wth_nasa_icasa$WEATHER_METADATA),
-  groups = NULL,
-  action = "coalesce"
-)
-weather_icasa$WEATHER_DAILY <- build_composite_data(
-  list(wth_field_icasa$WEATHER_DAILY, wth_nasa_icasa$WEATHER_DAILY),
-  groups = c("weather_station_id", "weather_station_name", "weather_date"),
-  action = "coalesce"
+# -- Assemble composite weather dataset ---
+# Combine sensor and NASA POWER weather data
+weather_icasa <- assemble_dataset(
+  components = list(wth_field_icasa, wth_nasa_icasa),
+  keep_all = TRUE,
+  action = "merge_properties",
+  output_path = "./archive/tmp_weatherdata_combined.json"
 )
 
 
@@ -203,6 +183,7 @@ soil_icasa <- get_soil_profile(
 ## mapping step is necesary here. 
 ## Data reference: https://doi.org/10.7910/DVN/1PEEY0
 ##
+
 ## ----------------------------------------------------------------------------------
 
 gs_raw <- lookup_gs_dates(
@@ -237,7 +218,7 @@ dataset_icasa <- assemble_dataset(
   components = list(
     "./archive/tmp_expdata_icasa.json",
     "./archive/tmp_soildata_icasa.json",
-    "./archive/tmp_weatherdata_icasa.json"
+    "./archive/tmp_weatherdata_combined.json"
   ),
   output_path = "./archive/tmp_icasa.json"
 )
