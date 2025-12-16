@@ -48,13 +48,13 @@ Imports:
     utils,
     xml2,
     zip,
-    zoo
+    zoo,
+    argparse
 Remotes: 
     AgMIP-GGCMI/cropCalendars,
     brry/rdwd,
     leroy-bml/DSSAT
 Suggests: 
-    argparse,
     testthat (>= 3.0.0)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

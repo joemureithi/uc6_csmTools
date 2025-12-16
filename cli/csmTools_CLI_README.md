@@ -1,6 +1,6 @@
 # csmTools Command-Line Interface
 
-A command-line interface for the csmTools package that allows you to run crop modeling workflows from the terminal.
+A command-line interface for the [csmTools](https://github.com/leroy-bml/uc6_csmTools) package that allows you to run crop modeling workflows from the terminal. `csmTools` should be installed in your R environment before running this CLI tool.
 
 ## Installation
 
@@ -13,19 +13,30 @@ install.packages("argparse")
 Make the CLI executable:
 
 ```bash
-chmod +x cli/csmtools_cli.R
+chmod +x csmtools_cli.R
 ```
 
 ## Usage
 
 The CLI is organized into subcommands for different workflow steps:
 
+### Workflow Steps
+
+1. **extract-field** - Extract field data from ICASA template
+2. **get-weather** - Download weather data (NASA POWER)
+3. **get-sensor** - Download sensor data (FROST server)
+4. **get-soil** - Extract soil profile (SoilGrids)
+5. **assemble** - Combine data components
+6. **convert** - Convert between formats (ICASA ↔ DSSAT)
+7. **build-inputs** - Generate DSSAT input files
+8. **simulate** - Run DSSAT simulation
+
 ### 1. Extract Field Data
 
 Extract field data from an ICASA template:
 
 ```bash
-Rscript cli/csmtools_cli.R extract-field \
+Rscript csmtools_cli.R extract-field \
   --path inst/extdata/template_icasa_vba.xlsm \
   --exp-id HWOC2501 \
   --output archive/field_data.json
@@ -36,7 +47,7 @@ Rscript cli/csmtools_cli.R extract-field \
 Get weather data from NASA POWER:
 
 ```bash
-Rscript cli/csmtools_cli.R get-weather \
+Rscript csmtools_cli.R get-weather \
   --lon 10.645269 \
   --lat 49.20868 \
   --from 2024-01-01 \
@@ -49,7 +60,7 @@ Rscript cli/csmtools_cli.R get-weather \
 Get sensor data from FROST server (requires credentials in `.Renviron`):
 
 ```bash
-Rscript cli/csmtools_cli.R get-sensor \
+Rscript csmtools_cli.R get-sensor \
   --lon 10.645269 \
   --lat 49.20868 \
   --from 2024-01-01 \
@@ -64,7 +75,7 @@ Rscript cli/csmtools_cli.R get-sensor \
 Extract soil profile from SoilGrids:
 
 ```bash
-Rscript cli/csmtools_cli.R get-soil \
+Rscript csmtools_cli.R get-soil \
   --lon 10.645269 \
   --lat 49.20868 \
   --output archive/soil_data.json
@@ -75,7 +86,7 @@ Rscript cli/csmtools_cli.R get-soil \
 Combine multiple data components:
 
 ```bash
-Rscript cli/csmtools_cli.R assemble \
+Rscript csmtools_cli.R assemble \
   --components archive/field_data.json archive/weather_nasa.json archive/soil_data.json \
   --output archive/icasa_dataset.json \
   --action merge_properties
@@ -86,7 +97,7 @@ Rscript cli/csmtools_cli.R assemble \
 Convert between different data formats:
 
 ```bash
-Rscript cli/csmtools_cli.R convert \
+Rscript csmtools_cli.R convert \
   --input archive/icasa_dataset.json \
   --from icasa \
   --to dssat \
@@ -98,7 +109,7 @@ Rscript cli/csmtools_cli.R convert \
 Build DSSAT input files:
 
 ```bash
-Rscript cli/csmtools_cli.R build-inputs \
+Rscript csmtools_cli.R build-inputs \
   --input archive/dssat_dataset.json \
   --write-dssat-dir
 ```
@@ -108,7 +119,7 @@ Rscript cli/csmtools_cli.R build-inputs \
 Run DSSAT crop simulation:
 
 ```bash
-Rscript cli/csmtools_cli.R simulate \
+Rscript csmtools_cli.R simulate \
   --filex ~/dssat/Wheat/HWOC2501.WHX \
   --treatments 1,3,7 \
   --dssat-dir ~/dssat \
@@ -117,7 +128,7 @@ Rscript cli/csmtools_cli.R simulate \
 
 ## Complete Workflow Example
 
-Here's a complete workflow using the CLI:
+### Complete workflow using the CLI:
 
 ```bash
 #!/bin/bash
@@ -128,40 +139,40 @@ export WORKDIR="archive"
 mkdir -p $WORKDIR
 
 # Step 1: Extract field data
-Rscript cli/csmtools_cli.R extract-field \
+Rscript csmtools_cli.R extract-field \
   --path inst/extdata/template_icasa_vba.xlsm \
   --exp-id HWOC2501 \
   --output $WORKDIR/field.json
 
 # Step 2: Get weather data
-Rscript cli/csmtools_cli.R get-weather \
+Rscript csmtools_cli.R get-weather \
   --lon 10.645269 --lat 49.20868 \
-  --from 2024-01-01 --to 2025-12-31 \
+  --from 2024-01-01 --to 2025-08-09 \
   --output $WORKDIR/weather.json
 
 # Step 3: Get soil data
-Rscript cli/csmtools_cli.R get-soil \
+Rscript csmtools_cli.R get-soil \
   --lon 10.645269 --lat 49.20868 \
   --output $WORKDIR/soil.json
 
 # Step 4: Assemble into ICASA format
-Rscript cli/csmtools_cli.R assemble \
+Rscript csmtools_cli.R assemble \
   --components $WORKDIR/field.json $WORKDIR/weather.json $WORKDIR/soil.json \
   --output $WORKDIR/icasa.json
 
 # Step 5: Convert to DSSAT format
-Rscript cli/csmtools_cli.R convert \
+Rscript csmtools_cli.R convert \
   --input $WORKDIR/icasa.json \
   --from icasa --to dssat \
   --output $WORKDIR/dssat.json
 
 # Step 6: Build DSSAT inputs
-Rscript cli/csmtools_cli.R build-inputs \
+Rscript csmtools_cli.R build-inputs \
   --input $WORKDIR/dssat.json \
   --write-dssat-dir
 
 # Step 7: Run simulation
-Rscript cli/csmtools_cli.R simulate \
+Rscript csmtools_cli.R simulate \
   --filex ~/dssat/Wheat/HWOC2501.WHX \
   --treatments 1,3,7 \
   --output-dir ./simulations
@@ -169,18 +180,32 @@ Rscript cli/csmtools_cli.R simulate \
 echo "✓ Workflow complete!"
 ```
 
+### Using the Shell Script
+
+```bash
+# Run complete workflow
+bash run_workflow.sh
+```
+
+### Comparison
+
+| Approach | Best For | Pros | Cons |
+|----------|----------|------|------|
+| **CLI Script** | Individual steps, debugging | Flexible, detailed control | Requires writing commands |
+| **Shell Script** | Complete automated runs | Simple to execute | Less flexible |
+
 ## Help
 
 Get help for any command:
 
 ```bash
 # General help
-Rscript cli/csmtools_cli.R --help
+Rscript csmtools_cli.R --help
 
 # Command-specific help
-Rscript cli/csmtools_cli.R extract-field --help
-Rscript cli/csmtools_cli.R get-weather --help
-Rscript cli/csmtools_cli.R assemble --help
+Rscript csmtools_cli.R extract-field --help
+Rscript csmtools_cli.R get-weather --help
+Rscript csmtools_cli.R assemble --help
 ```
 
 ## Environment Variables
