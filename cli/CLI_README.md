@@ -13,7 +13,7 @@ install.packages("argparse")
 Make the CLI executable:
 
 ```bash
-chmod +x inst/examples/csmtools_cli.R
+chmod +x cli/csmtools_cli.R
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ The CLI is organized into subcommands for different workflow steps:
 Extract field data from an ICASA template:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R extract-field \
+Rscript cli/csmtools_cli.R extract-field \
   --path inst/extdata/template_icasa_vba.xlsm \
   --exp-id HWOC2501 \
   --output archive/field_data.json
@@ -36,11 +36,11 @@ Rscript inst/examples/csmtools_cli.R extract-field \
 Get weather data from NASA POWER:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R get-weather \
+Rscript cli/csmtools_cli.R get-weather \
   --lon 10.645269 \
   --lat 49.20868 \
   --from 2024-01-01 \
-  --to 2025-12-31 \
+  --to 2025-08-09 \
   --output archive/weather_nasa.json
 ```
 
@@ -49,7 +49,7 @@ Rscript inst/examples/csmtools_cli.R get-weather \
 Get sensor data from FROST server (requires credentials in `.Renviron`):
 
 ```bash
-Rscript inst/examples/csmtools_cli.R get-sensor \
+Rscript cli/csmtools_cli.R get-sensor \
   --lon 10.645269 \
   --lat 49.20868 \
   --from 2024-01-01 \
@@ -64,7 +64,7 @@ Rscript inst/examples/csmtools_cli.R get-sensor \
 Extract soil profile from SoilGrids:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R get-soil \
+Rscript cli/csmtools_cli.R get-soil \
   --lon 10.645269 \
   --lat 49.20868 \
   --output archive/soil_data.json
@@ -75,7 +75,7 @@ Rscript inst/examples/csmtools_cli.R get-soil \
 Combine multiple data components:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R assemble \
+Rscript cli/csmtools_cli.R assemble \
   --components archive/field_data.json archive/weather_nasa.json archive/soil_data.json \
   --output archive/icasa_dataset.json \
   --action merge_properties
@@ -86,7 +86,7 @@ Rscript inst/examples/csmtools_cli.R assemble \
 Convert between different data formats:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R convert \
+Rscript cli/csmtools_cli.R convert \
   --input archive/icasa_dataset.json \
   --from icasa \
   --to dssat \
@@ -98,7 +98,7 @@ Rscript inst/examples/csmtools_cli.R convert \
 Build DSSAT input files:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R build-inputs \
+Rscript cli/csmtools_cli.R build-inputs \
   --input archive/dssat_dataset.json \
   --write-dssat-dir
 ```
@@ -108,7 +108,7 @@ Rscript inst/examples/csmtools_cli.R build-inputs \
 Run DSSAT crop simulation:
 
 ```bash
-Rscript inst/examples/csmtools_cli.R simulate \
+Rscript cli/csmtools_cli.R simulate \
   --filex ~/dssat/Wheat/HWOC2501.WHX \
   --treatments 1,3,7 \
   --dssat-dir ~/dssat \
@@ -128,40 +128,40 @@ export WORKDIR="archive"
 mkdir -p $WORKDIR
 
 # Step 1: Extract field data
-Rscript inst/examples/csmtools_cli.R extract-field \
+Rscript cli/csmtools_cli.R extract-field \
   --path inst/extdata/template_icasa_vba.xlsm \
   --exp-id HWOC2501 \
   --output $WORKDIR/field.json
 
 # Step 2: Get weather data
-Rscript inst/examples/csmtools_cli.R get-weather \
+Rscript cli/csmtools_cli.R get-weather \
   --lon 10.645269 --lat 49.20868 \
   --from 2024-01-01 --to 2025-12-31 \
   --output $WORKDIR/weather.json
 
 # Step 3: Get soil data
-Rscript inst/examples/csmtools_cli.R get-soil \
+Rscript cli/csmtools_cli.R get-soil \
   --lon 10.645269 --lat 49.20868 \
   --output $WORKDIR/soil.json
 
 # Step 4: Assemble into ICASA format
-Rscript inst/examples/csmtools_cli.R assemble \
+Rscript cli/csmtools_cli.R assemble \
   --components $WORKDIR/field.json $WORKDIR/weather.json $WORKDIR/soil.json \
   --output $WORKDIR/icasa.json
 
 # Step 5: Convert to DSSAT format
-Rscript inst/examples/csmtools_cli.R convert \
+Rscript cli/csmtools_cli.R convert \
   --input $WORKDIR/icasa.json \
   --from icasa --to dssat \
   --output $WORKDIR/dssat.json
 
 # Step 6: Build DSSAT inputs
-Rscript inst/examples/csmtools_cli.R build-inputs \
+Rscript cli/csmtools_cli.R build-inputs \
   --input $WORKDIR/dssat.json \
   --write-dssat-dir
 
 # Step 7: Run simulation
-Rscript inst/examples/csmtools_cli.R simulate \
+Rscript cli/csmtools_cli.R simulate \
   --filex ~/dssat/Wheat/HWOC2501.WHX \
   --treatments 1,3,7 \
   --output-dir ./simulations
@@ -175,12 +175,12 @@ Get help for any command:
 
 ```bash
 # General help
-Rscript inst/examples/csmtools_cli.R --help
+Rscript cli/csmtools_cli.R --help
 
 # Command-specific help
-Rscript inst/examples/csmtools_cli.R extract-field --help
-Rscript inst/examples/csmtools_cli.R get-weather --help
-Rscript inst/examples/csmtools_cli.R assemble --help
+Rscript cli/csmtools_cli.R extract-field --help
+Rscript cli/csmtools_cli.R get-weather --help
+Rscript cli/csmtools_cli.R assemble --help
 ```
 
 ## Environment Variables
