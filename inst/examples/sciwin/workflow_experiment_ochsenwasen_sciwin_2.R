@@ -11,10 +11,6 @@
 ## Notes: simulation results have yet to be refined
 ## 
 ## -----------------------------------------------------------------------------------
-# Load required libraries
-library(csmTools)
-library(dplyr)
-library(ggplot2)
 
 ###----- Crop management/manually input data (template) ------------------------------
 ## -----------------------------------------------------------------------------------
@@ -105,18 +101,6 @@ wth_model_icasa <- convert_dataset(
   input_model = "nasa-power",
   output_model = "icasa",
   output_path = "./inst/examples/sciwin/ochsenwasen_weather_nasapower_icasa.json"
-)
-
-# -- Assemble composite dataset ---
-wth_icasa <- assemble_dataset(
-  components = list(
-    "./inst/examples/sciwin/ochsenwasen_weather_sensor_icasa.json",
-    "./inst/examples/sciwin/ochsenwasen_weather_nasapower_icasa.json"
-  ),
-  keep_all = FALSE,
-  action = "merge_properties",
-  join_type = "full",
-  output_path = "./inst/examples/sciwin/ochsenwasen_weather_icasa.json"
 )
 
 
@@ -214,8 +198,15 @@ dataset_dssat <- convert_dataset(
 # TODO: add default + calibration
 
 # --- Test new soil profiles ---
-generic_loam_slp <- read_sol(file_name = "C:/DSSAT48/Soil/SOIL.SOL", id_soil = "IB00000005")
-generic_loam_slp <- as_DSSAT_tbl(generic_loam_slp)
+generic_loam_slp <- read_sol(file_name = "C:/DSSAT48/Soil/SOIL.SOL", id_soil = "IB00000007")
+generic_loam_slp <- unnest(generic_loam_slp, cols = c(SLB, SLMH, SLLL, SDUL, SSAT, SRGF, SSKS, SBDM, SLOC, SLCL, SLSI, SLCF, SLNI, SLHW, SLHB, SCEC, SADC))
+generic_loam_slp$PEDON <- "DE02114767"
+generic_loam_slp$SDUL - generic_loam_slp$SLLL  # Not very high...
+generic_loam_slp$SDUL <- generic_loam_slp$SDUL * 1.2
+generic_loam_slp$SSAT <- generic_loam_slp$SSAT * 1.2
+
+# generic_loam_slp$PEDON <- "LL00000001"
+# dataset_dssat$MANAGEMENT$FIELDS$ID_SOIL <- "LL00000001"
 
 
 # --- Normalize soil profile ---
@@ -230,7 +221,7 @@ soil_dssat_std <- normalize_soil_profile(
 # Update dataset with normalized soil profile ('replace')
 dataset_dssat <- assemble_dataset(
   components = list(
-    "./inst/examples/sciwin/ochsenwasen_dssat.json",
+    dataset_dssat,
     "./inst/examples/sciwin/ochsenwasen_soil_dssat_normalized.json"
   ),
   keep_all = FALSE,
@@ -278,8 +269,7 @@ dataset_dssat_input <- build_simulation_files(
 ###----- Run DSSAT simulation ------------------------------------------------------
 
 simulations <- run_simulations(
-  # filex_path = "C:/DSSAT48/Wheat/HWOC2501.WHX",  # the crop management file in the DSSAT location
-  filex_path = "./inst/examples/sciwin/HWOC2501.WHX",
+  filex_path = "C:/DSSAT48/Wheat/HWOC2501.WHX",  # the crop management file in the DSSAT location
   treatments = c(1, 3, 7),  # treatment index
   framework = "dssat",
   dssat_dir = NULL,
@@ -342,7 +332,7 @@ plot_growth
 
 
 ggsave(
-  filename = "./inst/examples/sciwin/simulation_results_2.png",
+  filename = "./inst/examples/sciwin/simulation_results.png",
   plot_growth,
   width = 15, height = 12, units = "cm",
   dpi = 600,
