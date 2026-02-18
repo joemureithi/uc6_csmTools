@@ -35,7 +35,7 @@ library(csmTools)
 ## -----------------------------------------------------------------------------------
 
 template_path <-
-  "/template_icasa_vba.xlsm"
+  "../extdata/template_icasa_vba.xlsm"
 
 # Extract template data
 mngt_obs_icasa <- get_field_data(
