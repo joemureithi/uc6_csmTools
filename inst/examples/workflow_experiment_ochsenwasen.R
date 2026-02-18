@@ -14,7 +14,7 @@
 ## -----------------------------------------------------------------------------------
 
 # Load required libraries
-library(csmTools)
+# library(csmTools)
 library(dplyr)
 library(ggplot2)
 
@@ -23,7 +23,7 @@ library(ggplot2)
 # Install devtools if you haven't already
 install.packages("devtools")
 # Install the package
-devtools::install_github("leroy-bml/csmTools")
+devtools::install_github("fairagro/csmTools")
 # Load the package
 library(csmTools)
 
@@ -35,7 +35,7 @@ library(csmTools)
 ## -----------------------------------------------------------------------------------
 
 template_path <-
-  "C:/Users/bmlle/Documents/0_DATA/TUM/HEF/FAIRagro/2-UseCases/UC6_IntegratedModeling/Workflows/csmTools/inst/extdata/template_icasa_vba.xlsm"
+  "/template_icasa_vba.xlsm"
 
 # Extract template data
 mngt_obs_icasa <- get_field_data(
