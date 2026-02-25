@@ -128,7 +128,7 @@ get_sensor_data <- function(url, creds = NULL, var, lon, lat, radius, from, to, 
   )
   
   # TODO: fix, returns a message, not a df when no ds is found
-  if(nrow(ds_metadata) == 0) {
+  if (is.null(ds_metadata) || !is.data.frame(ds_metadata) || nrow(ds_metadata) == 0) {
     warning("No datastreams found at the specified location.")
     return(NULL)
   }

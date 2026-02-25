@@ -18,14 +18,29 @@
 library(dplyr)
 library(ggplot2)
 
+script_args <- commandArgs(trailingOnly = FALSE)
+script_file <- sub("^--file=", "", script_args[grep("^--file=", script_args)])
+script_dir <- if (length(script_file) > 0) {
+  dirname(normalizePath(script_file))
+} else {
+  getwd()
+}
+
 ###----- Install/load package --------------------------------------------------------
 
 # Install devtools if you haven't already
-install.packages("devtools")
-# Install the package
-devtools::install_github("fairagro/csmTools")
-# Load the package
-library(csmTools)
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
+
+root_dir <- normalizePath(file.path(script_dir, "..", ".."))
+
+if (file.exists(file.path(root_dir, "DESCRIPTION")) && file.exists(file.path(root_dir, "NAMESPACE"))) {
+  devtools::load_all(root_dir)
+} else {
+  devtools::install_github("fairagro/csmTools")
+  library(csmTools)
+}
 
 ###----- Crop management/manually input data (template) ------------------------------
 ## -----------------------------------------------------------------------------------
@@ -34,8 +49,10 @@ library(csmTools)
 ##
 ## -----------------------------------------------------------------------------------
 
-template_path <-
-  "../extdata/template_icasa_vba.xlsm"
+template_path <- normalizePath(
+  file.path(script_dir, "..", "extdata", "template_icasa_vba.xlsm"),
+  mustWork = TRUE
+)
 
 # Extract template data
 mngt_obs_icasa <- get_field_data(
@@ -197,20 +214,28 @@ soil_icasa <- get_soil_profile(
 
 ## ----------------------------------------------------------------------------------
 
-gs_raw <- lookup_gs_dates(
-  data = "./archive/wheat_phenology_results.csv",
-  gs_scale = "zadok",
-  gs_codes = c(10, 65, 87),
-  date_select_rule = "median",
-  output_path = "./archive/tmp-phenology.json"
-)
+phenology_path <- file.path(root_dir, "archive", "wheat_phenology_results.csv")
 
-gs_icasa <- convert_dataset(
-  dataset = gs_raw,
-  input_model = "user",
-  output_model = "icasa",
-  output_path = "./archive/tmp-phenology-icasa.json"
-)
+if (file.exists(phenology_path)) {
+  gs_raw <- lookup_gs_dates(
+    data = phenology_path,
+    gs_scale = "zadok",
+    gs_codes = c(10, 65, 87),
+    date_select_rule = "median",
+    output_path = file.path(root_dir, "archive", "tmp-phenology.json")
+  )
+
+  gs_icasa <- convert_dataset(
+    dataset = gs_raw,
+    input_model = "user",
+    output_model = "icasa",
+    output_path = file.path(root_dir, "archive", "tmp-phenology-icasa.json")
+  )
+} else {
+  warning("Phenology results file not found at ", phenology_path, ". Skipping phenology processing.")
+  gs_raw <- NULL
+  gs_icasa <- NULL
+}
 
 
 ###----- Data integration and mapping to DSSAT --------------------------------------
