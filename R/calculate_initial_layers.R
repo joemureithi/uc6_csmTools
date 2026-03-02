@@ -41,7 +41,7 @@ calculate_initial_layers <- function(soil_profile, percent_available_water = NUL
   
   # Resolve input data
   if (is.data.frame(soil_profile)) {
-    data <- list(SOIL = soil_profile)
+    soil_profile <- list(SOIL = soil_profile)
   }
   data_list <- resolve_input(soil_profile)
   soil_profile <- data_list[["SOIL"]]

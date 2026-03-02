@@ -256,6 +256,7 @@ dataset_icasa <- assemble_dataset(
     "./archive/tmp_soildata_icasa.json",
     "./archive/tmp_weatherdata_combined.json"
   ),
+  keep_all = TRUE,
   output_path = "./archive/tmp_icasa.json"
 )
 
@@ -300,7 +301,7 @@ soil_dssat_std <- normalize_soil_profile(
   method = "linear"
 )
 #OPT1: take the whole DSSAT data and fetch the soil section
-dataset_dssat$SOIL <- soil_dssat_std$data
+dataset_dssat$SOIL <- soil_dssat_std$SOIL
 dataset_dssat$SOIL$SRGF <- 1
 
 # Generate initial layers
@@ -315,15 +316,22 @@ dataset_dssat$MANAGEMENT$INITIAL_CONDITIONS$SNH4 <- list(init_layers$SNH4)
 dataset_dssat$MANAGEMENT$INITIAL_CONDITIONS$SNO3 <- list(init_layers$SNO3)
 
 dataset_dssat$MANAGEMENT$FIELDS$ID_SOIL <- "IB00000007"
+# The above overrides the soil ID to DSSAT's built-in generic loam, so DSSAT uses that soil instead of the SoilGrids-derived profile. 
+# The CLI has no such override, so it uses the actual SoilGrids soil → much higher simulated yields → higher Y-axis.
 
 ###----- Compile crop modeling data -------------------------------------------------
+
+# Set DSSAT executable path (cross-platform)
+if (.Platform$OS.type == "unix") {
+  Sys.setenv(DSSAT_CSM = file.path(Sys.getenv("HOME"), "dssat", "dscsm048"))
+}
 
 # Assemble full input dataset
 dataset_dssat_input <- build_simulation_files(
   dataset = dataset_dssat,
   sol_append = FALSE,
   write = TRUE, write_in_dssat_dir = TRUE,
-  control_args = list(
+  control_config = list(
     RSEED = 1243, SMODEL = "WHAPS",  # general
     WATER = "Y", NITRO = "Y", TILL = "Y",  # options
     PHOTO = "C", MESEV = "S", # methods
@@ -338,28 +346,32 @@ dataset_dssat_input <- build_simulation_files(
 
 output_directory <- paste0(getwd(), "/simulations")
 
+filex_path <- if (.Platform$OS.type == "unix") {
+  file.path(Sys.getenv("HOME"), "dssat", "Wheat", "HWOC2501.WHX")
+} else {
+  "C:/DSSAT48/Wheat/HWOC2501.WHX"
+}
+
 sims <- run_simulations(
-  filex_path = "C:/DSSAT48/Wheat/HWOC2501.WHX",
+  filex_path = filex_path,
   treatments = c(1, 3, 7),
   framework = "dssat",
   dssat_dir = NULL,
   sim_dir = "./inst/extdata/test_fixtures"
 )
 
-View(sims$plant_growth)
+print(sims$PlantGro)
 
 
 ###----- Plot output ---------------------------------------------------------------
 plot_output <- function(sim_output){
   
   # Observed data
-  obs_summary_growth <- sim_output$SUMMARY %>%
-    filter(TRNO %in% c(1,3,7)) %>%  # FIX
-    mutate(MDAT = as.POSIXct(as.Date(MDAT, format = "%y%j")),
-           HDAT = as.POSIXct(as.Date(HDAT, format = "%y%j")))
+  obs_summary_growth <- sim_output$Summary %>%
+    filter(TRNO %in% c(1,3,7))  # HDAT/MDAT already POSIXct from read_output
   
   # Simulated data
-  sim_growth <- sim_output$plant_growth
+  sim_growth <- sim_output$PlantGro
   
   # Plot
   plot_growth <- sim_growth %>%
@@ -369,7 +381,7 @@ plot_output <- function(sim_output){
     geom_line(aes(group = TRNO, colour = TRNO, linewidth = "Simulated")) +
     # Points for observed data
     geom_point(data = obs_summary_growth,
-               aes(x = HDAT, y = GWAM, colour = as.factor(TRNO), size = "Observed"), shape = 20) +
+               aes(x = HDAT, y = HWAM, colour = as.factor(TRNO), size = "Observed"), shape = 20) +
     # Phenology (estimated)
     # geom_vline(data = obs_summary_growth, aes(xintercept = EDAT), colour = "darkblue") +
     # geom_vline(data = obs_summary_growth, aes(xintercept = ADAT), colour = "darkgreen") +
@@ -395,13 +407,13 @@ plot_output <- function(sim_output){
   return(plot_growth)
 }
 
-plot_output(sims)
+print(plot_output(sims))
 
 
 # TODO: comparison soil moisture measured vs simulated
 # TODO: same thing for anthesis
 
-tmp <- sims$SUMMARY %>%
-  select(TRNO, GWAM) %>%
-  left_join(sims$plant_growth %>%
+tmp <- sims$Summary %>%
+  select(TRNO, HWAM) %>%
+  left_join(sims$PlantGro %>%
               filter(DATE == max(DATE)))

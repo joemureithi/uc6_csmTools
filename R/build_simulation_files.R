@@ -13,9 +13,10 @@
 #' @param write_in_dssat_dir (logical) If `TRUE`, files are written to standard DSSAT subdirectories.
 #'   If `FALSE`, all files are written to the `path` directory. Default: `TRUE`.
 #' @param path (character) Target directory for writing files. **Only used if `write_in_dssat_dir = FALSE`**. Default: `getwd()`.
-#' @param control_config (character) Path to a JSON/YAML configuration file specifying DSSAT simulation control parameters.
-#'   The file should contain key-value pairs where keys are parameter names (e.g., `"NITROGEN"`, `"WATER"`, `"RSEED"`, `"SDATE"`)
-#'   and values are the desired settings. These values will override DSSAT's default simulation controls.
+#' @param control_config (character or named list) Either a path to a JSON/YAML configuration file, or a named list,
+#'   specifying DSSAT simulation control parameters. Keys are parameter names
+#'   (e.g., `"NITROGEN"`, `"WATER"`, `"RSEED"`, `"SDATE"`) and values are the desired settings.
+#'   These values will override DSSAT's default simulation controls.
 #'   To view default values, run `data(dssat_default_simcontrols)`.
 #'
 #' @details
@@ -78,17 +79,21 @@ build_simulation_files <- function(
   # Load control parameters if config file is provided
   control_args <- list()
   if (!is.null(control_config)) {
-    if (!file.exists(control_config)) {
-      stop("Control configuration file not found at: ", control_config)
-    }
-    
-    config_ext <- tolower(file_ext(control_config))
-    if (config_ext == "yaml" || config_ext == "yml") {
-      control_args <- read_yaml(control_config)
-    } else if (config_ext == "json") {
-      control_args <- fromJSON(txt = readLines(control_config))
+    if (is.list(control_config)) {
+      # Accept a named list directly
+      control_args <- control_config
     } else {
-      stop("Unsupported configuration file format. Use YAML (.yaml/.yml) or JSON (.json)")
+      if (!file.exists(control_config)) {
+        stop("Control configuration file not found at: ", control_config)
+      }
+      config_ext <- tolower(file_ext(control_config))
+      if (config_ext == "yaml" || config_ext == "yml") {
+        control_args <- read_yaml(control_config)
+      } else if (config_ext == "json") {
+        control_args <- fromJSON(txt = readLines(control_config))
+      } else {
+        stop("Unsupported configuration file format. Use YAML (.yaml/.yml) or JSON (.json)")
+      }
     }
   }
   
