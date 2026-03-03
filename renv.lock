@@ -303,6 +303,11 @@
       "Repository": "https://p3m.dev/cran/latest",
       "Encoding": "UTF-8"
     },
+    "argparse": {
+      "Package": "argparse",
+      "Version": "2.3.1",
+      "Source": "Repository"
+    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.2.1",
@@ -1170,6 +1175,11 @@
       "Maintainer": "Winston Chang <winston@posit.co>",
       "Repository": "https://p3m.dev/cran/latest"
     },
+    "findpython": {
+      "Package": "findpython",
+      "Version": "1.0.9",
+      "Source": "Repository"
+    },
     "furrr": {
       "Package": "furrr",
       "Version": "0.3.1",
@@ -1920,6 +1930,11 @@
       "Author": "Yihui Xie [aut, cre] (<https://orcid.org/0000-0003-0645-5666>, https://yihui.org), Jeffrey Horner [ctb], Beilei Bian [ctb]",
       "Maintainer": "Yihui Xie <xie@yihui.name>",
       "Repository": "https://p3m.dev/cran/latest"
+    },
+    "nasapower": {
+      "Package": "nasapower",
+      "Version": "4.2.5",
+      "Source": "Repository"
     },
     "ncdf4": {
       "Package": "ncdf4",
@@ -3641,6 +3656,11 @@
       "Author": "Hadley Wickham [aut], Jim Hester [aut], Jeroen Ooms [aut, cre], Posit Software, PBC [cph, fnd], R Foundation [ctb] (Copy of R-project homepage cached as example)",
       "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
       "Repository": "https://p3m.dev/cran/latest"
+    },
+    "yaml": {
+      "Package": "yaml",
+      "Version": "2.3.12",
+      "Source": "Repository"
     },
     "zip": {
       "Package": "zip",
